@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Diagnosis } from '../types';
 
@@ -25,17 +24,17 @@ const TreatmentScreen: React.FC<TreatmentScreenProps> = ({ diagnosis, onBack }) 
                 <p className="text-lg text-gray-600 mb-6">{diagnosis.short_explanation}</p>
                 
                 <div className="mb-6">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-3 border-b-2 border-primary-light pb-1">Descripción Detallada</h3>
-                    <p className="text-gray-700 whitespace-pre-wrap">{diagnosis.long_explanation}</p>
-                </div>
-
-                <div>
                     <h3 className="text-xl font-semibold text-gray-800 mb-3 border-b-2 border-primary-light pb-1">Recomendaciones</h3>
                     <ul className="list-disc list-inside space-y-2 text-gray-700">
                         {diagnosis.recommendations.map((rec, index) => (
                             <li key={index}>{rec}</li>
                         ))}
                     </ul>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-gray-800 mb-3 border-b-2 border-primary-light pb-1">Descripción Detallada</h3>
+                    <p className="text-gray-700 whitespace-pre-wrap">{diagnosis.long_explanation}</p>
                 </div>
 
                  <div className="mt-8 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded-md">
@@ -46,5 +45,3 @@ const TreatmentScreen: React.FC<TreatmentScreenProps> = ({ diagnosis, onBack }) 
         </div>
     );
 };
-
-export default TreatmentScreen;
