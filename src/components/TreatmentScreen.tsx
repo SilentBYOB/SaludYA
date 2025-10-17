@@ -45,3 +45,5 @@ const TreatmentScreen: React.FC<TreatmentScreenProps> = ({ diagnosis, onBack }) 
         </div>
     );
 };
+
+export default TreatmentScreen;
