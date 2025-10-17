@@ -6,13 +6,13 @@ import SplashScreen from './components/SplashScreen';
 import Header from './components/Header';
 import WelcomeScreen from './components/WelcomeScreen';
 import SymptomInputScreen from './components/SymptomInputScreen';
-import LoadingSpinner from './components/LoadingSpinner';
 import QuestionScreen from './components/QuestionScreen';
 import DiagnosisScreen from './components/DiagnosisScreen';
 import TreatmentScreen from './components/TreatmentScreen';
 import HistoryScreen from './components/HistoryScreen';
 import BottomNav from './components/BottomNav';
 import ConfirmationModal from './components/ConfirmationModal';
+import DiagnosisScreenSkeleton from './components/DiagnosisScreenSkeleton';
 
 const App: React.FC = () => {
     // App flow state
@@ -61,6 +61,11 @@ const App: React.FC = () => {
         setDiagnoses([]);
         setSelectedDiagnosis(null);
     }, []);
+
+    const handleGoHome = () => {
+        resetConsultation();
+        setAppState(AppState.Welcome);
+    };
 
     const handleNewConsultation = () => {
         resetConsultation();
@@ -140,7 +145,8 @@ const App: React.FC = () => {
 
     const renderContent = () => {
         if (isLoading && appState !== AppState.Welcome) {
-            return <LoadingSpinner />;
+            // Unify the loading screen to use the component that works correctly on mobile.
+            return <DiagnosisScreenSkeleton />;
         }
 
         switch (appState) {
@@ -173,6 +179,7 @@ const App: React.FC = () => {
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
             <Header
+                onLogoClick={handleGoHome}
                 onNewConsultation={handleNewConsultation}
                 subscription={subscription}
                 setSubscription={setSubscription}
