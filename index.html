@@ -5,6 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Salud YA</title>
 
+    <!-- PWA Manifest will be injected by vite-plugin-pwa -->
+    <meta name="theme-color" content="#156dbd" />
+    <meta name="description" content="Tu consulta en un click. Obtén orientación sobre tus síntomas de forma rápida e inteligente." />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://saludgc.netlify.app/" />
+    <meta property="og:title" content="Salud YA" />
+    <meta property="og:description" content="Tu consulta en un click. Obtén orientación sobre tus síntomas de forma rápida e inteligente." />
+    <meta property="og:image" content="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=1200&h=630&auto=format&fit=crop" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://saludgc.netlify.app/" />
+    <meta property="twitter:title" content="Salud YA" />
+    <meta property="twitter:description" content="Tu consulta en un click. Obtén orientación sobre tus síntomas de forma rápida e inteligente." />
+    <meta property="twitter:image" content="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=1200&h=630&auto=format&fit=crop" />
+
+
     <script type="importmap">
 {
   "imports": {
@@ -19,10 +38,6 @@
 }
 </script>
 
-    <!-- PWA Manifest will be injected by vite-plugin-pwa -->
-    <meta name="theme-color" content="#156dbd" />
-
-
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
@@ -35,7 +50,7 @@
     <!-- Tailwind Config -->
     <script>
         tailwind.config = {
-            darkMode: false,
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -85,7 +100,6 @@
           transform-origin: 50% 50%;
         }
     </style>
-<link rel="stylesheet" href="/index.css">
 </head>
 <body class="bg-gray-50 font-display">
     <div id="root"></div>
