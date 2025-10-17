@@ -1,0 +1,16 @@
+{
+  "short_name": "Salud YA",
+  "name": "Salud YA: Asistente de Salud IA",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2966/2966327.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#156dbd",
+  "background_color": "#F8F9FA"
+}

@@ -1,0 +1,5 @@
+{
+  "name": "Salud YA",
+  "description": "Una aplicación de consultoría de salud preliminar que utiliza la IA de Gemini para analizar los síntomas del usuario, hacer preguntas relevantes y proporcionar posibles escenarios de diagnóstico y recomendaciones de tratamiento. La aplicación incluye un historial de consultas.",
+  "requestFramePermissions": []
+}
