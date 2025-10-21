@@ -28,7 +28,7 @@ const TreatmentScreen: React.FC<TreatmentScreenProps> = ({ diagnosis, onBack }) 
                     <p className="text-gray-700 whitespace-pre-wrap">{diagnosis.long_explanation}</p>
                 </div>
 
-                <div>
+                <div className="mt-6">
                     <h3 className="text-xl font-semibold text-gray-800 mb-3 border-b-2 border-primary-light pb-1">Recomendaciones</h3>
                     <ul className="list-disc list-inside space-y-2 text-gray-700">
                         {diagnosis.recommendations.map((rec, index) => (
