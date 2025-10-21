@@ -1,22 +1,24 @@
-
 import React from 'react';
 import Logo from './Logo';
 import { SubscriptionLevel } from '../types';
 
 interface HeaderProps {
+    onLogoClick: () => void;
     onNewConsultation: () => void;
     subscription: SubscriptionLevel;
     setSubscription: (level: SubscriptionLevel) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onNewConsultation, subscription, setSubscription }) => {
+const Header: React.FC<HeaderProps> = ({ onLogoClick, onNewConsultation, subscription, setSubscription }) => {
     const isPro = subscription === SubscriptionLevel.Pro;
 
     return (
         <header className="bg-primary shadow-md sticky top-0 z-10">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center py-3">
-                    <Logo variant="inverse" />
+                    <button onClick={onLogoClick} aria-label="Volver a la pantalla de inicio">
+                        <Logo variant="inverse" />
+                    </button>
                     <div className="flex items-center space-x-4">
                         <div className="flex items-center space-x-2">
                             <span className={`text-sm font-medium ${!isPro ? 'text-white' : 'text-blue-200'}`}>Gratis</span>
