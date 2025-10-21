@@ -1,27 +1,29 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { AppState, SubscriptionLevel, Diagnosis, Consultation } from './types';
-import { generateQuestions, generateDiagnosis } from './services/geminiService';
+import { generateQuestions, generateDiagnosis, checkSymptomRelevance } from './services/geminiService';
 
 import SplashScreen from './components/SplashScreen';
 import Header from './components/Header';
 import WelcomeScreen from './components/WelcomeScreen';
 import SymptomInputScreen from './components/SymptomInputScreen';
-import LoadingSpinner from './components/LoadingSpinner';
 import QuestionScreen from './components/QuestionScreen';
 import DiagnosisScreen from './components/DiagnosisScreen';
 import TreatmentScreen from './components/TreatmentScreen';
 import HistoryScreen from './components/HistoryScreen';
 import BottomNav from './components/BottomNav';
 import ConfirmationModal from './components/ConfirmationModal';
+import DiagnosisScreenSkeleton from './components/DiagnosisScreenSkeleton';
 
 const App: React.FC = () => {
     // App flow state
     const [appState, setAppState] = useState<AppState>(AppState.Welcome);
     const [isLoading, setIsLoading] = useState<boolean>(true); // Start with loading for splash screen
+    const [loadingMessage, setLoadingMessage] = useState<string>('Analizando información...');
 
     // Data state
     const [subscription, setSubscription] = useState<SubscriptionLevel>(SubscriptionLevel.Free);
     const [symptoms, setSymptoms] = useState<string>('');
+    const [symptomInputError, setSymptomInputError] = useState<string | null>(null);
     const [questions, setQuestions] = useState<string[]>([]);
     const [answers, setAnswers] = useState<string[]>([]);
     const [diagnoses, setDiagnoses] = useState<Diagnosis[]>([]);
@@ -60,7 +62,13 @@ const App: React.FC = () => {
         setAnswers([]);
         setDiagnoses([]);
         setSelectedDiagnosis(null);
+        setSymptomInputError(null);
     }, []);
+
+    const handleGoHome = () => {
+        resetConsultation();
+        setAppState(AppState.Welcome);
+    };
 
     const handleNewConsultation = () => {
         resetConsultation();
@@ -72,19 +80,32 @@ const App: React.FC = () => {
     };
 
     const handleSymptomSubmit = async (symptoms: string) => {
+        setSymptomInputError(null);
         setSymptoms(symptoms);
+        setLoadingMessage('Verificando consulta...');
         setIsLoading(true);
-        const generatedQuestions = await generateQuestions(symptoms, subscription === SubscriptionLevel.Pro);
-        setQuestions(generatedQuestions);
-        setIsLoading(false);
-        setAppState(AppState.Question);
+
+        const isMedical = await checkSymptomRelevance(symptoms);
+        
+        if (isMedical) {
+            setLoadingMessage('Analizando síntomas y generando preguntas...');
+            const generatedQuestions = await generateQuestions(symptoms, subscription === SubscriptionLevel.Pro);
+            setQuestions(generatedQuestions);
+            setIsLoading(false);
+            setAppState(AppState.Question);
+        } else {
+            setSymptomInputError('Esta es una aplicación de diagnóstico médico preliminar y no puedo responder a otras cuestiones. Por favor, describa sus síntomas.');
+            setIsLoading(false);
+        }
     };
 
     const handleQuestionSubmit = async (answers: string[]) => {
         setAnswers(answers);
+        setLoadingMessage('Evaluando respuestas y generando diagnóstico...');
         setIsLoading(true);
         const generatedDiagnoses = await generateDiagnosis(symptoms, questions, answers, subscription === SubscriptionLevel.Pro);
-        setDiagnoses(generatedDiagnoses);
+        const filteredDiagnoses = generatedDiagnoses.filter(d => d.probability >= 25);
+        setDiagnoses(filteredDiagnoses);
         setIsLoading(false);
         setAppState(AppState.Diagnosis);
     };
@@ -93,7 +114,6 @@ const App: React.FC = () => {
         setSelectedDiagnosis(diagnosis);
         setAppState(AppState.Treatment);
         
-        // Save to history
         const newConsultation: Consultation = {
             id: new Date().toISOString(),
             date: new Date().toISOString(),
@@ -107,7 +127,6 @@ const App: React.FC = () => {
     };
 
     const handleHistorySelect = (consultation: Consultation) => {
-        // Set all relevant state from the historic consultation
         setSymptoms(consultation.symptoms);
         setQuestions(consultation.questions);
         setAnswers(consultation.answers);
@@ -135,19 +154,23 @@ const App: React.FC = () => {
         } else if (deleteTarget) {
             setHistory(prevHistory => prevHistory.filter(c => c.id !== deleteTarget));
         }
-        setDeleteTarget(null); // Close modal
+        setDeleteTarget(null);
     };
 
     const renderContent = () => {
         if (isLoading && appState !== AppState.Welcome) {
-            return <LoadingSpinner />;
+            return <DiagnosisScreenSkeleton message={loadingMessage} />;
         }
 
         switch (appState) {
             case AppState.Welcome:
                 return <WelcomeScreen onStart={handleStart} onViewHistory={handleViewHistory} />;
             case AppState.SymptomInput:
-                return <SymptomInputScreen onSubmit={handleSymptomSubmit} />;
+                return <SymptomInputScreen 
+                            onSubmit={handleSymptomSubmit} 
+                            errorMessage={symptomInputError}
+                            onClearError={() => setSymptomInputError(null)}
+                        />;
             case AppState.Question:
                 return <QuestionScreen questions={questions} onSubmit={handleQuestionSubmit} />;
             case AppState.Diagnosis:
@@ -156,7 +179,6 @@ const App: React.FC = () => {
                 if (selectedDiagnosis) {
                     return <TreatmentScreen diagnosis={selectedDiagnosis} onBack={handleBackToDiagnosis} />;
                 }
-                // Fallback if no diagnosis is selected
                 setAppState(AppState.Diagnosis);
                 return null;
             case AppState.History:
@@ -173,6 +195,7 @@ const App: React.FC = () => {
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
             <Header
+                onLogoClick={handleGoHome}
                 onNewConsultation={handleNewConsultation}
                 subscription={subscription}
                 setSubscription={setSubscription}
