@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { Diagnosis } from '../types';
 
@@ -40,6 +39,55 @@ const diagnosisSchema = {
     },
 };
 
+const relevanceSchema = {
+    type: Type.OBJECT,
+    properties: {
+        is_medical_query: { 
+            type: Type.BOOLEAN,
+            description: "Set to true if the user's input is about a medical symptom, illness, or health concern. Otherwise, set to false."
+        },
+    },
+    required: ['is_medical_query'],
+};
+
+export const checkSymptomRelevance = async (symptoms: string): Promise<boolean> => {
+    // Use the faster model for this simple classification task.
+    const model = flashModel; 
+    const prompt = `
+    Eres un clasificador de consultas médicas. Tu única tarea es determinar si el siguiente texto describe un síntoma médico, una enfermedad, una dolencia o cualquier problema de salud. No respondas a la pregunta, solo clasifícala.
+
+    Texto del usuario: "${symptoms}"
+
+    Responde únicamente con un objeto JSON que se ajuste al esquema proporcionado. Si el texto trata sobre un tema de salud, 'is_medical_query' debe ser true. Si trata de cualquier otra cosa (saludos, preguntas no médicas, spam, etc.), debe ser false.
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: model,
+            contents: prompt,
+            config: {
+                responseMimeType: 'application/json',
+                responseSchema: relevanceSchema,
+                temperature: 0.1, // Low temperature for deterministic classification
+            },
+        });
+
+        const jsonText = (response.text ?? '').trim();
+        if (!jsonText) {
+             // Default to true to avoid blocking a valid query if the API returns nothing.
+            return true;
+        }
+        const parsed = JSON.parse(jsonText);
+        return parsed.is_medical_query ?? true;
+    } catch (error) {
+        console.error("Error checking symptom relevance:", error);
+        // In case of an error (e.g., API failure), we'll let the query pass
+        // to avoid blocking a potentially valid user.
+        return true;
+    }
+};
+
+
 export const generateQuestions = async (symptoms: string, isPro: boolean): Promise<string[]> => {
     const model = isPro ? proModel : flashModel;
     const prompt = `Basado en los siguientes síntomas, genera entre 3 y 5 preguntas de seguimiento concisas y claras para ayudar a determinar la causa. Devuelve solo el objeto JSON.
@@ -56,7 +104,6 @@ export const generateQuestions = async (symptoms: string, isPro: boolean): Promi
             },
         });
         
-        // Fix: Per guidelines, use response.text to get the generated text.
         const jsonText = (response.text ?? '').trim();
         if (!jsonText) return []; // Return empty array if response is empty
         const parsed = JSON.parse(jsonText);
@@ -109,7 +156,6 @@ export const generateDiagnosis = async (symptoms: string, questions: string[], a
             },
         });
 
-        // Fix: Per guidelines, use response.text
         const jsonText = (response.text ?? '').trim();
         if (!jsonText) throw new Error("API returned an empty response."); // Throw error to be caught and handled
         const diagnoses: Diagnosis[] = JSON.parse(jsonText);
